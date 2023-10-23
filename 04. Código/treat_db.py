@@ -47,8 +47,8 @@ df = df[[
     'ocor_SIGLA_UF',
     'ocor_REGIAO',
     'idade_obito',
-    'CAUSABAS',
-    'def_circ_obito'
+    'causabas_capitulo',
+    'causabas_grupo'
 ]]
 
 df.to_pickle('../data/SP_selected_parametes.pkl')
@@ -104,7 +104,12 @@ df = df.drop(columns=['OCUP','digito_ocup'])
 
 df2 = df[cat_col].copy()
 one_hot_encoded_data = pd.get_dummies(df2, columns = cat_col)
-one_hot_encoded_data.columns = [c.replace(' ', '_') for c in one_hot_encoded_data.columns]
+translation_table = str.maketrans({' ': '_', ',': '_'})
+one_hot_encoded_data.columns = [c.translate(translation_table) for c in one_hot_encoded_data.columns]
+one_hot_encoded_data.columns = [c.replace('__', '_') for c in one_hot_encoded_data.columns]
+one_hot_encoded_data.columns = one_hot_encoded_data.columns.str.lower()
+# np.savetxt('colunas_one_hot.txt', one_hot_encoded_data.columns, fmt='%s')
+# one_hot_encoded_data.columns = [c.replace(' ', '_') for c in one_hot_encoded_data.columns]
 
 df = df.drop(columns=cat_col)
 df = pd.merge(df, one_hot_encoded_data, left_index=True, right_index=True)
