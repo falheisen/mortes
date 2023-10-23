@@ -87,8 +87,9 @@ outras_colunas = df.columns
 outras_colunas = list(set(outras_colunas).difference(set(cat_col)))
 
 # Datas (UNIX) 
-df['data_obito'] = pd.to_datetime(df['data_obito'])
+df = df.dropna(axis=0)
 df['data_nasc'] = pd.to_datetime(df['data_nasc'])
+df['data_obito'] = pd.to_datetime(df['data_obito'])
 df['data_nasc'] = df['data_nasc'].astype('int64') 
 df['data_obito'] = df['data_obito'].astype('int64') 
 # df['DTATESTADO'] = df['DTATESTADO'].apply(lambda x: str(int(x)).zfill(8) if not pd.isnull(x) else np.nan)
@@ -114,5 +115,22 @@ one_hot_encoded_data.columns = one_hot_encoded_data.columns.str.lower()
 df = df.drop(columns=cat_col)
 df = pd.merge(df, one_hot_encoded_data, left_index=True, right_index=True)
 df = df.dropna(axis=0)
+
+df.causabas_capitulo.value_counts()
+df.causabas_capitulo.value_counts(normalize=True).mul(100).round(1).astype(str) + '%'
+
+dict_doencas = {
+    'V. Transtornos mentais e comportamentais':'Outros',
+    'III. Doenças sangue órgãos hemat e transt imunitár':'Outros',
+    'XIII.Doenças sist osteomuscular e tec conjuntivo':'Outros',
+    'XII. Doenças da pele e do tecido subcutâneo':'Outros',
+    'XVI. Algumas afec originadas no período perinatal':'Outros',
+    'XVII.Malf cong deformid e anomalias cromossômicas':'Outros',
+    'XV. Gravidez parto e puerpério':'Outros',
+    'VIII.Doenças do ouvido e da apófise mastóide':'Outros',
+    'VII. Doenças do olho e anexos':'Outros', 
+}
+
+df.causabas_capitulo.replace(dict_doencas, inplace=True)
 
 df.to_pickle('../data/SP_treated_base.pkl')
