@@ -210,6 +210,9 @@ if __name__ == '__main__':
 
     n_classes = len(np.unique(y_train))
     n_samples = len(X_train)
+    n_features = len(X_train.iloc[0])
+    print(f"n_features={n_features}")
+    print(f"n_samples={n_samples}")
 
     label_encoder = LabelEncoder()
     y_train_encoded = label_encoder.fit_transform(y_train)
@@ -218,3 +221,5 @@ if __name__ == '__main__':
     fs = infFS_S()
     fs.fit(X_train, y_train_encoded)
     print(fs.RANKED)
+    # for element in fs.RANKED:
+    #     print(element)

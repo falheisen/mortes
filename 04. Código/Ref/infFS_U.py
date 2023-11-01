@@ -131,3 +131,5 @@ if __name__ == '__main__':
     fs = infFS_U()
     fs.fit(X_train, y_train_encoded)
     print(fs.RANKED)
+    for element in fs.RANKED:
+        print(element)
