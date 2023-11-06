@@ -1,11 +1,12 @@
+from sklearn.tree import DecisionTreeClassifier
 import pandas as pd
 import xgboost as xgb
 from sklearn.preprocessing import LabelEncoder
 
 X_train1 = pd.read_pickle('../data/X_train1.pkl')
-X_test1 = pd.read_pickle('../data/X_test1.pkl') 
+X_test1 = pd.read_pickle('../data/X_test1.pkl')
 y_train1 = pd.read_pickle('../data/y_train1.pkl')
-y_test1 = pd.read_pickle('../data/y_test1.pkl') 
+y_test1 = pd.read_pickle('../data/y_test1.pkl')
 
 X_train1.shape
 X_test1.shape
@@ -17,9 +18,11 @@ y_test_encoded = label_encoder.transform(y_test1)
 """
 existem 19 valores únicos de resposta, logo aleatório 
 1/19 = 5,26%
-""" 
+"""
 
-xgb_classifier = xgb.XGBClassifier(objective='multi:softmax', num_class=num_classes)  # Set num_class to the number of classes in your problem
+# Set num_class to the number of classes in your problem
+xgb_classifier = xgb.XGBClassifier(
+    objective='multi:softmax', num_class=num_classes)
 xgb_classifier.fit(X_train1, y_train_encoded)
 accuracy = xgb_classifier.score(X_test1, y_test_encoded)
 print("XGBoost Accuracy:", accuracy)
@@ -30,17 +33,21 @@ del xgb_classifier
 # X_train1_adj = scaler.fit_transform(X_train1)
 # X_test1_adj = scaler.transform(X_test1)
 
-from sklearn.tree import DecisionTreeClassifier
 dt = DecisionTreeClassifier()
 dt.fit(X_train1, y_train1)
-print(dt.score(X_test1, y_test1)) # 0.3027334293948127
+print(dt.score(X_test1, y_test1))  # 0.3027334293948127
 del dt
+
+X_train2 = pd.read_pickle('../data/X_train2.pkl')
+X_test2 = pd.read_pickle('../data/X_test2.pkl')
+y_train2 = pd.read_pickle('../data/y_train2.pkl')
+y_test2 = pd.read_pickle('../data/y_test2.pkl')
 
 # from sklearn.ensemble import RandomForestClassifier
 # clf = RandomForestClassifier(n_estimators=50)
 # clf.fit(X_train1, y_train1)
 # print(clf.score(X_test1, y_test1)) # 0.06333789625360231
-# # ABNORMAL_TERMINATION_IN_LNSRCH. 
+# # ABNORMAL_TERMINATION_IN_LNSRCH.
 # del clf
 
 # from sklearn.linear_model import LogisticRegression
