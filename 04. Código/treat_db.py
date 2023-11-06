@@ -134,3 +134,24 @@ dict_doencas = {
 df.causabas_capitulo.replace(dict_doencas, inplace=True)
 
 df.to_pickle('../data/SP_treated_base.pkl')
+
+df = df[[
+    'data_nasc',
+    'ano_nasc',
+    'def_cirurgia_sim',
+    'data_obito',
+    'idade_obito',
+    'idade_obito_calculado',
+    'idade_obito_anos',
+    'ano_obito',
+    'def_loc_ocor_domicÃ­lio',
+    'def_est_civil_solteiro',
+    'def_raca_cor_indÃ­gena',
+    'def_sexo_ignorado',
+    'res_rsaudcod_3517',
+    'res_rsaudcod_3511',
+    'dia_semana_nasc_sex',
+    'dia_semana_obito_qui',
+    'dia_semana_obito_qua',
+    'dia_semana_obito_sab'
+]]
