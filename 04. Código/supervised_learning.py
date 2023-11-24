@@ -7,21 +7,25 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import top_k_accuracy_score
 
-X_train1 = pd.read_pickle('../data/X_train1.pkl')
-X_test1 = pd.read_pickle('../data/X_test1.pkl')
-y_train1 = pd.read_pickle('../data/y_train1.pkl')
-y_test1 = pd.read_pickle('../data/y_test1.pkl')
+X_train_all_reasons_all_features = pd.read_pickle(
+    '../data/X_train_all_reasons_all_features.pkl')
+X_test_all_reasons_all_features = pd.read_pickle(
+    '../data/X_test_all_reasons_all_features.pkl')
+y_train_all_reasons_all_features = pd.read_pickle(
+    '../data/y_train_all_reasons_all_features.pkl')
+y_test_all_reasons_all_features = pd.read_pickle(
+    '../data/y_test_all_reasons_all_features.pkl')
 
-X_train1.shape
-X_test1.shape
-num_classes = len(y_train1.unique())
+X_train_all_reasons_all_features.shape
+X_test_all_reasons_all_features.shape
+num_classes = len(y_train_all_reasons_all_features.unique())
 label_encoder = LabelEncoder()
-y_train_encoded = label_encoder.fit_transform(y_train1)
-y_test_encoded = label_encoder.transform(y_test1)
+y_train_encoded = label_encoder.fit_transform(y_train_all_reasons_all_features)
+y_test_encoded = label_encoder.transform(y_test_all_reasons_all_features)
 
 sc = StandardScaler()
-X_train = sc.fit_transform(X_train1)
-X_test = sc.transform(X_test1)
+X_train = sc.fit_transform(X_train_all_reasons_all_features)
+X_test = sc.transform(X_test_all_reasons_all_features)
 k = 5
 
 """
@@ -34,10 +38,13 @@ xgb_classifier = xgb.XGBClassifier(
     objective='multi:softmax', num_class=num_classes)
 xgb_classifier.fit(X_train, y_train_encoded)
 accuracy = xgb_classifier.score(X_test, y_test_encoded)
+y_pred = xgb_classifier.predict(X_test)
 y_pred_proba = xgb_classifier.predict_proba(X_test)
 top_k_accuracy = top_k_accuracy_score(y_test_encoded, y_pred_proba, k=k)
 print(f"XGBoost Accuracy: {accuracy:.2f}")
 print(f"XGBoost Top-{k} Accuracy: {top_k_accuracy:.2f}")
+truth_table = pd.crosstab(index=y_test_encoded, columns=y_pred, rownames=[
+                          'Real'], colnames=['Predição'], margins=True).to_excel('../03. Planilhas/tabela verdade xgboost.xlsx')
 del xgb_classifier
 
 print('')

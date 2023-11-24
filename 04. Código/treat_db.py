@@ -1,3 +1,4 @@
+import string
 import pandas as pd
 import numpy as np
 
@@ -47,11 +48,11 @@ df = df[[
     # 'ocor_REGIAO',
     'idade_obito',
     'causabas_capitulo',
-    'causabas_grupo'
+    # 'causabas_grupo'
 ]]
 
-df.to_pickle('../data/SP_selected_parametes.pkl')
-df = pd.read_pickle('../data/SP_selected_parametes.pkl')
+df.to_pickle('../data/SP_selected_features.pkl')
+df = pd.read_pickle('../data/SP_selected_features.pkl')
 cbo2002 = pd.read_excel('../03. Planilhas/CBO2002.xlsx')
 
 # IDENTIFICANDO COLUNAS DE CATEGORIAS
@@ -120,25 +121,31 @@ df = df.drop(columns=cat_col)
 df = pd.merge(df, one_hot_encoded_data, left_index=True, right_index=True)
 df = df.dropna(axis=0)
 
-df.causabas_capitulo.value_counts()
+# translator = str.maketrans('', '', string.punctuation)
+# df.causabas_capitulo.apply(lambda x: x.translate(translator))
+df.causabas_capitulo.value_counts().to_excel('causas.xlsx')
 df.causabas_capitulo.value_counts(normalize=True).mul(
     100).round(1).astype(str) + '%'
 
+df.to_pickle('../data/SP_treated_base.pkl')
+df = pd.read_pickle('../data/SP_treated_base.pkl')
+
 dict_doencas = {
-    'V. Transtornos mentais e comportamentais': 'Outros',
+    'V.   Transtornos mentais e comportamentais': 'Outros',
     'III. Doenças sangue órgãos hemat e transt imunitár': 'Outros',
     'XIII.Doenças sist osteomuscular e tec conjuntivo': 'Outros',
     'XII. Doenças da pele e do tecido subcutâneo': 'Outros',
     'XVI. Algumas afec originadas no período perinatal': 'Outros',
     'XVII.Malf cong deformid e anomalias cromossômicas': 'Outros',
-    'XV. Gravidez parto e puerpério': 'Outros',
+    'XV.  Gravidez parto e puerpério': 'Outros',
     'VIII.Doenças do ouvido e da apófise mastóide': 'Outros',
     'VII. Doenças do olho e anexos': 'Outros',
 }
 
 df.causabas_capitulo.replace(dict_doencas, inplace=True)
 
-df.to_pickle('../data/SP_treated_base.pkl')
+df.to_pickle('../data/SP_treated_base_top_causes.pkl')
+df = pd.read_pickle('../data/SP_treated_base_top_causes.pkl')
 
 top10_params = df[[
     'data_nasc',
@@ -161,4 +168,4 @@ top10_params = df[[
     'dia_semana_obito_sab'
 ]]
 
-df.to_pickle('../data/SP_treated_base_top10_params.pkl')
+df.to_pickle('../data/SP_treated_base_top10_features.pkl')
