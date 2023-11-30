@@ -11,6 +11,7 @@ from sklearn.utils.validation import FLOAT_DTYPES
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
 
+
 class infFS_S():
     """Inf-FS Supervised (2020).
 
@@ -53,16 +54,17 @@ class infFS_S():
 
         pA = np.histogram(A, nbins)[0]
         pA = pA/n
-        pA[np.where(pA==0)[0]] = 0.00001
+        pA[np.where(pA == 0)[0]] = 0.00001
         od = Y.shape[1]
         c_l = od
         if od == 1:
-            pY = np.array([len(np.where(Y==+1.0)[0]),  len(np.where(Y==+-1.0)[0])])/n
+            pY = np.array([len(np.where(Y == +1.0)[0]),
+                          len(np.where(Y == +-1.0)[0])])/n
             c_l = 2
         else:
             pY = np.zeros((1, od))
             for i in range(0, od):
-                pY[i] = len(np.where(Y==+1.0)[0])
+                pY[i] = len(np.where(Y == +1.0)[0])
             pY = pY / n
 
         p = np.zeros((c_l, nbins))
@@ -78,7 +80,7 @@ class infFS_S():
                 if j < nbins-1:
                     interval = interval & (Z[:, 0] < x_1 + rx)
 
-                p[i, j] = len(np.where(interval==1)[0])
+                p[i, j] = len(np.where(interval == 1)[0])
 
                 if p[i, j] == 0:
                     p[i, j] = 0.00001
@@ -90,7 +92,7 @@ class infFS_S():
         pA = matlib.repmat(pA, c_l, 1)
         pY = matlib.repmat(np.reshape(pY, (1, 2)).T, 1, nbins)
         p = p/n
-        info = np.sum(np.sum(p * np.log(p /(pA * pY)), axis=0))
+        info = np.sum(np.sum(p * np.log(p / (pA * pY)), axis=0))
         info = 2 * info / (HA + HY)
         return info
 
@@ -102,25 +104,27 @@ class infFS_S():
         for i in range(0, train_x.shape[1]):
             mi_s.append(self.muteinf(train_x[:, i], train_y))
         mi_s = np.array(mi_s)
-        mi_s[np.where(np.isnan(mi_s))[0]] = 0 # remove NaN
-        mi_s[np.where(np.isinf(mi_s))[0]] = 0 # remove inf
+        mi_s[np.where(np.isnan(mi_s))[0]] = 0  # remove NaN
+        mi_s[np.where(np.isinf(mi_s))[0]] = 0  # remove inf
 
-
-        #Zero-Max norm
+        # Zero-Max norm
         mi_s = mi_s - np.min(np.min(mi_s))
         mi_s = mi_s / np.max(np.max(mi_s))
 
-        #Metric 2: class separation
-        fi_s = np.array([np.mean(train_x[np.where(train_y == +1.0)[0], :], axis=0) - np.mean(train_x[np.where(train_y == -1.0)[0], :], axis=0)])**2
-        st = np.std(train_x[np.where(train_y == +1.0)[0],:], axis=0, ddof=1)**2
-        st = st + np.std(train_x[np.where(train_y == -1.0)[0], :], axis=0, ddof=1)**2
-        st[np.where(st == 0)[0]] = 10000 # remove ones where nothing occurs
+        # Metric 2: class separation
+        fi_s = np.array([np.mean(train_x[np.where(train_y == +1.0)[0], :], axis=0) -
+                        np.mean(train_x[np.where(train_y == -1.0)[0], :], axis=0)])**2
+        st = np.std(train_x[np.where(train_y == +1.0)
+                    [0], :], axis=0, ddof=1)**2
+        st = st + \
+            np.std(train_x[np.where(train_y == -1.0)[0], :], axis=0, ddof=1)**2
+        st[np.where(st == 0)[0]] = 10000  # remove ones where nothing occurs
         fi_s = fi_s / st
 
         fi_s[np.where(np.isnan(fi_s))[0]] = 0  # remove NaN
         fi_s[np.where(np.isinf(fi_s))[0]] = 0  # remove inf
 
-        #Zero-Max norm
+        # Zero-Max norm
         fi_s = fi_s - np.min(np.min(fi_s))
         fi_s = fi_s / np.max(np.max(fi_s))
 
@@ -136,7 +140,8 @@ class infFS_S():
         MI = np.matlib.repmat(mi_s, mi_s.shape[1], 1)
         FI = np.matlib.repmat(fi_s, fi_s.shape[1], 1)
 
-        G = alpha[0] * ((MI + FI.T)/2) + alpha[1] * ( (MI+SD.T)/2 ) + alpha[2]* ( (SD+FI.T)/2 )
+        G = alpha[0] * ((MI + FI.T)/2) + alpha[1] * \
+            ((MI+SD.T)/2) + alpha[2] * ((SD+FI.T)/2)
 
         rho = np.max(np.sum(G, axis=1))
 
@@ -157,23 +162,23 @@ class infFS_S():
 
         eps = 5e-06 * N
 
-        factor = 1 - eps # shrinking
+        factor = 1 - eps  # shrinking
 
         A, rho = self.getGraphWeights(X, Y, self.alpha, eps)
 
         # Letting paths tend to infinite: Inf-FS Core
         I = np.eye((A.shape[0]))
 
-        r = factor / rho # Set a meaningful value for r: = 0 < r < 1 / rho
+        r = factor / rho  # Set a meaningful value for r: = 0 < r < 1 / rho
 
         y = I - (r*A)
 
         S = np.linalg.inv(y)
 
         # 5) Estimating energy scores
-        self.WEIGHT = np.sum(S, axis=1)# prob.scores s(i)
+        self.WEIGHT = np.sum(S, axis=1)  # prob.scores s(i)
 
-        #6) Ranking features according to s
+        # 6) Ranking features according to s
         self.RANKED = np.argsort(self.WEIGHT, axis=-1)[::-1]
 
         e = np.ones((N))
@@ -189,37 +194,40 @@ class infFS_S():
         return self
 
     def transform(self, X, Y=None, top_n=None):
-        #Update the how many features we wanna w.r.t its weights
+        # Update the how many features we wanna w.r.t its weights
         if top_n is not None:
             self.top_n = top_n
 
         return X[:, self.RANKED[0:self.top_n]]
 
-if __name__ == '__main__':
-    np.random.seed(12227)
 
-    # n_samples, n_classes = 19000, 19
-    # X = np.random.rand(n_samples, 100)
-    # y = np.random.randint(0, n_classes, size=n_samples)
-    # X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33, random_state=42)
+# if __name__ == '__main__':
+np.random.seed(12227)
 
-    X_train = pd.read_pickle('../../data/X_train1.pkl')
-    y_train = pd.read_pickle('../../data/y_train1.pkl')
-    X_test = pd.read_pickle('../../data/X_test1.pkl')
-    y_test = pd.read_pickle('../../data/y_test1.pkl') 
+# n_samples, n_classes = 19000, 19
+# X = np.random.rand(n_samples, 100)
+# y = np.random.randint(0, n_classes, size=n_samples)
+# X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33, random_state=42)
 
-    n_classes = len(np.unique(y_train))
-    n_samples = len(X_train)
-    n_features = len(X_train.iloc[0])
-    print(f"n_features={n_features}")
-    print(f"n_samples={n_samples}")
+data_arrays = np.load(
+    '../data/data_top_causes_all_features.npz', allow_pickle=True)
+X_test = data_arrays['X_test']
+X_train = data_arrays['X_train']
+y_test = data_arrays['y_test']
+y_train = data_arrays['y_train']
 
-    label_encoder = LabelEncoder()
-    y_train_encoded = label_encoder.fit_transform(y_train)
-    y_test_encoded = label_encoder.transform(y_test)
+n_classes = len(np.unique(y_train))
+n_samples = len(X_train)
+n_features = len(X_train[0])
+print(f"n_features={n_features}")
+print(f"n_samples={n_samples}")
 
-    fs = infFS_S()
-    fs.fit(X_train, y_train_encoded)
-    print(fs.RANKED)
-    # for element in fs.RANKED:
-    #     print(element)
+label_encoder = LabelEncoder()
+y_train_encoded = label_encoder.fit_transform(y_train)
+y_test_encoded = label_encoder.transform(y_test)
+
+fs = infFS_S()
+fs.fit(X_train, y_train_encoded)
+print(fs.RANKED)
+# for element in fs.RANKED:
+#     print(element)

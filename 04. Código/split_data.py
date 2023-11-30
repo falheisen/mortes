@@ -71,18 +71,17 @@ del df
 y_top_causes = sampled_df.causabas_capitulo
 
 # Codificar os rótulos
-label_encoder = LabelEncoder()
+# label_encoder = LabelEncoder()
+# with open('label_encoder.pkl', 'wb') as file:
+#     pickle.dump(label_encoder, file)
+with open('../data/label_encoder.pkl', 'rb') as file:
+    label_encoder = pickle.load(file)
 y_encoded_top_causes = label_encoder.fit_transform(y_top_causes)
 X_top_causes = sampled_df.drop(columns=['causabas_capitulo'])
 
-
-# Save the LabelEncoder
-with open('label_encoder.pkl', 'wb') as file:
-    pickle.dump(label_encoder, file)
-
 # Fazer o split estratificado
 X_train_top_causes_all_features, X_test_top_causes_all_features, y_train_top_causes_all_features, y_test_top_causes_all_features = train_test_split(
-    sampled_df,
+    X_top_causes,
     y_encoded_top_causes,
     train_size=0.7,
     test_size=0.3,
