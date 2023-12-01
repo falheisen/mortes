@@ -2,7 +2,9 @@ import string
 import pandas as pd
 import numpy as np
 
-df = pd.read_pickle('../data/SP_total.pkl')
+estado = 'RS'
+
+df = pd.read_pickle(f'../data/{estado}_total.pkl')
 
 # FILTER PARAMETERS
 
@@ -51,8 +53,8 @@ df = df[[
     # 'causabas_grupo'
 ]]
 
-df.to_pickle('../data/SP_selected_features.pkl')
-df = pd.read_pickle('../data/SP_selected_features.pkl')
+df.to_pickle(f'../data/{estado}_selected_features.pkl')
+df = pd.read_pickle(f'../data/{estado}_selected_features.pkl')
 cbo2002 = pd.read_excel('../03. Planilhas/CBO2002.xlsx')
 
 # IDENTIFICANDO COLUNAS DE CATEGORIAS
@@ -127,8 +129,8 @@ df.causabas_capitulo.value_counts().to_excel('causas.xlsx')
 df.causabas_capitulo.value_counts(normalize=True).mul(
     100).round(1).astype(str) + '%'
 
-df.to_pickle('../data/SP_treated_base.pkl')
-df = pd.read_pickle('../data/SP_treated_base.pkl')
+df.to_pickle(f'../data/{estado}_treated_base.pkl')
+df = pd.read_pickle(f'../data/{estado}_treated_base.pkl')
 
 dict_doencas = {
     'V.   Transtornos mentais e comportamentais': 'Outros',
@@ -144,28 +146,28 @@ dict_doencas = {
 
 df.causabas_capitulo.replace(dict_doencas, inplace=True)
 
-df.to_pickle('../data/SP_treated_base_top_causes.pkl')
-df = pd.read_pickle('../data/SP_treated_base_top_causes.pkl')
+df.to_pickle(f'../data/{estado}_treated_base_top_causes.pkl')
+# df = pd.read_pickle(f'../data/{estado}_treated_base_top_causes.pkl')
 
-top10_params = df[[
-    'data_nasc',
-    'ano_nasc',
-    'def_cirurgia_sim',
-    'data_obito',
-    'idade_obito',
-    'idade_obito_calculado',
-    'idade_obito_anos',
-    'ano_obito',
-    'def_loc_ocor_domicílio',
-    'def_est_civil_solteiro',
-    'def_raca_cor_indígena',
-    'def_sexo_ignorado',
-    'res_rsaudcod_3517',
-    'res_rsaudcod_3511',
-    'dia_semana_nasc_sex',
-    'dia_semana_obito_qui',
-    'dia_semana_obito_qua',
-    'dia_semana_obito_sab'
-]]
+# top10_params = df[[
+#     'data_nasc',
+#     'ano_nasc',
+#     'def_cirurgia_sim',
+#     'data_obito',
+#     'idade_obito',
+#     'idade_obito_calculado',
+#     'idade_obito_anos',
+#     'ano_obito',
+#     'def_loc_ocor_domicílio',
+#     'def_est_civil_solteiro',
+#     'def_raca_cor_indígena',
+#     'def_sexo_ignorado',
+#     'res_rsaudcod_3517',
+#     'res_rsaudcod_3511',
+#     'dia_semana_nasc_sex',
+#     'dia_semana_obito_qui',
+#     'dia_semana_obito_qua',
+#     'dia_semana_obito_sab'
+# ]]
 
-df.to_pickle('../data/SP_treated_base_top10_features.pkl')
+# df.to_pickle('../data/SP_treated_base_top10_features.pkl')

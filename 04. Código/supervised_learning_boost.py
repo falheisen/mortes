@@ -71,6 +71,9 @@ catboost_top_k_accuracy = top_k_accuracy_score(
     y_test, catboost_y_pred_proba, k=k)
 print(f"CatBoost Accuracy: {catboost_accuracy*100:.2f}%")
 print(f"CatBoost Top-{k} Accuracy: {catboost_top_k_accuracy*100:.2f}%")
+model_filename = '../data/catboost_model.cbm'
+catboost_classifier.save_model(model_filename)
+print(f"Model saved to {model_filename}")
 
 print('')
 print('')

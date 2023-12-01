@@ -3,6 +3,10 @@ from numpy import matlib
 from scipy import stats
 from sklearn.utils import check_array
 from sklearn.utils.validation import FLOAT_DTYPES
+from catboost import CatBoostClassifier
+from sklearn.metrics import top_k_accuracy_score
+import matplotlib.pyplot as plt
+from matplotlib.ticker import PercentFormatter
 
 np.random.seed(12227)
 
@@ -319,7 +323,97 @@ class infFS_S():
 #####################################################################################################
 
 
+k = 3
+percentages = range(10, 101, 10)  # Cria uma sequência de 10% a 100%
+features_array = [int(n_features * pct / 100) for pct in percentages]
+
 fss = infFS_S()
 fss.fit(X_train, y_train)
+
 fsu = infFS_U()
 fsu.fit(X_train, y_train)
+
+catboost_accuracies_fss = []
+catboost_top_k_accuracies_fss = []
+catboost_accuracies_fsu = []
+catboost_top_k_accuracies_fsu = []
+
+for i in range(len(features_array)):
+
+    X_train_top_features_fss = fss.transform(X_train, top_n=features_array[i])
+    X_test_top_features_fss = fss.transform(X_test, top_n=features_array[i])
+
+    catboost_classifier_fss = CatBoostClassifier(
+        iterations=1000, depth=6, learning_rate=0.1, loss_function='MultiClass', custom_metric=['Accuracy'])
+    catboost_classifier_fss.fit(X_train_top_features_fss, y_train)
+    catboost_accuracy_fss = catboost_classifier_fss.score(
+        X_test_top_features_fss, y_test)
+    catboost_y_pred_proba_fss = catboost_classifier_fss.predict_proba(
+        X_test_top_features_fss)
+    catboost_top_k_accuracy_fss = top_k_accuracy_score(
+        y_test, catboost_y_pred_proba_fss, k=k)
+    catboost_accuracies_fss.append(catboost_accuracy_fss)
+    catboost_top_k_accuracies_fss.append(catboost_top_k_accuracy_fss)
+
+    X_train_top_features_fsu = fsu.transform(X_train, top_n=features_array[i])
+    X_test_top_features_fsu = fsu.transform(X_test, top_n=features_array[i])
+
+    catboost_classifier_fsu = CatBoostClassifier(
+        iterations=1000, depth=6, learning_rate=0.1, loss_function='MultiClass', custom_metric=['Accuracy'])
+    catboost_classifier_fsu.fit(X_train_top_features_fsu, y_train)
+    catboost_accuracy_fsu = catboost_classifier_fsu.score(
+        X_test_top_features_fsu, y_test)
+    catboost_y_pred_proba_fsu = catboost_classifier_fsu.predict_proba(
+        X_test_top_features_fsu)
+    catboost_top_k_accuracy_fsu = top_k_accuracy_score(
+        y_test, catboost_y_pred_proba_fsu, k=k)
+    catboost_accuracies_fsu.append(catboost_accuracy_fsu)
+    catboost_top_k_accuracies_fsu.append(catboost_top_k_accuracy_fsu)
+
+# Plotting
+plt.figure(figsize=(10, 6))
+plt.plot(percentages, [acc * 100 for acc in catboost_accuracies_fss],
+         'b--', label='Accuracy')  # Convertendo para porcentagem
+plt.plot(percentages, [top_k_acc * 100 for top_k_acc in catboost_top_k_accuracies_fss],
+         'ro--', label='Top-3 Accuracy')  # Convertendo para porcentagem
+plt.axhline(y=100/11, color='gray', linestyle='--',
+            label='Random Guess (1/11)')  # Linha para sorteio aleatório
+# plt.xticks(range(1, 12))  # Exibindo todos os valores de k no eixo x
+plt.yticks(range(0, 71, 10))  # Escala do eixo y em intervalos de 10%
+plt.xlabel('Top features selected (%)')
+plt.ylabel('Accuracy (%)')  # Alterando o rótulo do eixo y para porcentagem
+plt.title('XGBoost Accuracy and Top-3 Accuracy with Feature Selection (Inf-FS_S)')
+plt.gca().yaxis.set_major_formatter(PercentFormatter())
+plt.gca().xaxis.set_major_formatter(PercentFormatter())
+plt.legend()
+plt.grid(True)
+plt.savefig('../02. Relatorio/feature-selection-fss.png',
+            format='png', dpi=300)
+plt.show()
+
+# Plotting
+plt.figure(figsize=(10, 6))
+plt.plot(percentages, [acc * 100 for acc in catboost_accuracies_fss],
+         'b--', label='Accuracy')  # Convertendo para porcentagem
+plt.plot(percentages, [top_k_acc * 100 for top_k_acc in catboost_top_k_accuracies_fss],
+         'ro--', label='Top-3 Accuracy')  # Convertendo para porcentagem
+plt.axhline(y=100/11, color='gray', linestyle='--',
+            label='Random Guess (1/11)')  # Linha para sorteio aleatório
+# plt.xticks(range(1, 12))  # Exibindo todos os valores de k no eixo x
+plt.yticks(range(0, 71, 10))  # Escala do eixo y em intervalos de 10%
+plt.xlabel('Top features selected (%)')
+plt.ylabel('Accuracy (%)')  # Alterando o rótulo do eixo y para porcentagem
+plt.title('XGBoost Accuracy and Top-3 Accuracy with Feature Selection (Inf-FS_U)')
+plt.gca().yaxis.set_major_formatter(PercentFormatter())
+plt.gca().xaxis.set_major_formatter(PercentFormatter())
+plt.legend()
+plt.grid(True)
+plt.savefig('../02. Relatorio/feature-selection-fsu.png',
+            format='png', dpi=300)
+plt.show()
+
+for element in fss.RANKED:
+    print(element)
+
+for element in fsu.RANKED:
+    print(element)
