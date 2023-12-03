@@ -6,11 +6,25 @@ years = [year for year in range(start_year, end_year + 1)]
 
 dfs = {}
 
-estado = 'RS'
+estados = [
+    # "SP",
+    # "RS",
+    'BA',
+    'DF',
+    'GO',
+    'PA'
+]
 
-for year in years:
-    dfs[year] = pd.read_csv(f'../ETLSIM/ETLSIM.DORES_{estado}_{year}_t.csv')
+# estado = 'AC'
 
-df = pd.concat(dfs.values(), ignore_index=True)
-del dfs
-df.to_pickle(f'../data/{estado}_total.pkl')
+for estado in estados:
+
+    dfs = {}
+
+    for year in years:
+        dfs[year] = pd.read_csv(
+            f'../ETLSIM/ETLSIM.DORES_{estado}_{year}_t.csv')
+
+    df = pd.concat(dfs.values(), ignore_index=True)
+    del dfs
+    df.to_pickle(f'../data/{estado}_total.pkl')

@@ -10,7 +10,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import top_k_accuracy_score
 
 data_arrays = np.load(
-    '../data/data_top_causes_all_features.npz', allow_pickle=True)
+    './data/data_top_causes_all_features.npz', allow_pickle=True)
 X_test = data_arrays['X_test']
 X_train = data_arrays['X_train']
 y_test = data_arrays['y_test']
@@ -21,6 +21,7 @@ X_train = sc.fit_transform(X_train)
 X_test = sc.transform(X_test)
 k = 3
 num_classes = np.unique(y_train)
+np.random.seed(12227)
 
 """
 existem 19 valores únicos de resposta, logo aleatório 
@@ -44,7 +45,7 @@ xgb_top_k_accuracy = top_k_accuracy_score(y_test, xgb_y_pred_proba, k=k)
 print(f"XGBoost Accuracy: {xgb_accuracy*100:.2f}%")
 print(f"XGBoost Top-{k} Accuracy: {xgb_top_k_accuracy*100:.2f}%")
 matriz_confusao = pd.crosstab(index=y_test, columns=xgb_y_pred, rownames=[
-    'Real'], colnames=['Predição'], margins=True).to_excel('../03. Planilhas/matriz confusao xgboost.xlsx')
+    'Real'], colnames=['Predição'], margins=True).to_excel('./03. Planilhas/matriz confusao xgboost.xlsx')
 
 print('')
 print('')
@@ -71,7 +72,7 @@ catboost_top_k_accuracy = top_k_accuracy_score(
     y_test, catboost_y_pred_proba, k=k)
 print(f"CatBoost Accuracy: {catboost_accuracy*100:.2f}%")
 print(f"CatBoost Top-{k} Accuracy: {catboost_top_k_accuracy*100:.2f}%")
-model_filename = '../data/catboost_model.cbm'
+model_filename = './data/catboost_model.cbm'
 catboost_classifier.save_model(model_filename)
 print(f"Model saved to {model_filename}")
 
@@ -141,7 +142,7 @@ plt.ylabel('Accuracy (%)')  # Alterando o rótulo do eixo y para porcentagem
 plt.title('XGBoost Accuracy vs Top-k Accuracy')
 plt.gca().yaxis.set_major_formatter(PercentFormatter())
 plt.legend()
-plt.savefig('../02. Relatorio/top-k-accuracy.png', format='png', dpi=300)
+plt.savefig('./02. Relatorio/top-k-accuracy.png', format='png', dpi=300)
 plt.show()
 
 # Assumindo que ks e as listas de top_k_accuracies já foram calculadas
@@ -162,5 +163,5 @@ plt.title('Top-k Accuracy vs. k')
 plt.gca().yaxis.set_major_formatter(PercentFormatter())
 plt.legend()
 plt.grid(True)
-plt.savefig('../02. Relatorio/top-k-accuracy-boost.png', format='png', dpi=300)
+plt.savefig('./02. Relatorio/top-k-accuracy-boost.png', format='png', dpi=300)
 plt.show()
