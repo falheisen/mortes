@@ -2,183 +2,154 @@ import string
 import pandas as pd
 import numpy as np
 
-# estado = 'RS'
+colunas = {}
 
-estados = [
-    "SP",
-    "RS",
-    'BA',
-    'DF',
-    'GO',
-    'PA'
+estado = 'SP'
+
+df = pd.read_pickle(f'../data/{estado}_total.pkl')
+
+# FILTER PARAMETERS
+
+df = df[[
+    'data_obito',
+    'ano_obito',
+    'dia_semana_obito',
+    # 'NATURAL',
+    'data_nasc',
+    'idade_obito_calculado',
+    'ano_nasc',
+    'dia_semana_nasc',
+    'idade_obito_anos',
+    'def_sexo',
+    'def_raca_cor',
+    'def_est_civil',
+    'def_escol',
+    'OCUP',
+    # 'CODMUNRES',
+    # 'CODMUNOCOR',
+    'def_loc_ocor',
+    'def_assist_med',
+    'def_exame',
+    'def_cirurgia',
+    'def_necropsia',
+    'res_CAPITAL',
+    'res_MSAUDCOD',
+    'res_RSAUDCOD',
+    'res_CSAUDCOD',
+    'res_LATITUDE',
+    'res_LONGITUDE',
+    'res_ALTITUDE',
+    'res_AREA',
+    # 'ocor_CAPITAL',
+    # 'ocor_MSAUDCOD',
+    # 'ocor_RSAUDCOD',
+    # 'ocor_CSAUDCOD',
+    # 'ocor_LATITUDE',
+    # 'ocor_LONGITUDE',
+    # 'ocor_ALTITUDE',
+    'ocor_AREA',
+    # 'ocor_SIGLA_UF',
+    # 'ocor_REGIAO',
+    'idade_obito',
+    'causabas_capitulo',
+    # 'causabas_grupo'
+]]
+
+df.to_pickle(f'../data/{estado}_selected_features.pkl')
+df = pd.read_pickle(f'../data/{estado}_selected_features.pkl')
+cbo2002 = pd.read_excel('../03. Planilhas/CBO2002.xlsx')
+
+# IDENTIFICANDO COLUNAS DE CATEGORIAS
+
+cat_col = [
+    'dia_semana_obito',
+    # 'NATURAL',
+    'dia_semana_nasc',
+    'def_sexo',
+    'def_raca_cor',
+    'def_est_civil',
+    'def_escol',
+    'def_loc_ocor',
+    'def_assist_med',
+    'def_exame',
+    'def_cirurgia',
+    'def_necropsia',
+    'res_CAPITAL',
+    'res_MSAUDCOD',
+    'res_RSAUDCOD',
+    'res_CSAUDCOD',
+    # 'ocor_CAPITAL',
+    # 'ocor_MSAUDCOD',
+    # 'ocor_RSAUDCOD',
+    # 'ocor_CSAUDCOD',
+    # 'ocor_SIGLA_UF',
+    # 'ocor_REGIAO',
+    'grande_grupo_ocup',
+    'nivel_comp_ocup'
 ]
 
-for estado in estados:
+outras_colunas = df.columns
+outras_colunas = list(set(outras_colunas).difference(set(cat_col)))
 
-    df = pd.read_pickle(f'../data/{estado}_total.pkl')
+# Datas (UNIX)
+df = df.dropna(axis=0)
+df['data_nasc'] = pd.to_datetime(df['data_nasc'])
+df['data_obito'] = pd.to_datetime(df['data_obito'])
+df['data_nasc'] = df['data_nasc'].astype('int64')
+df['data_obito'] = df['data_obito'].astype('int64')
+# df['DTATESTADO'] = df['DTATESTADO'].apply(lambda x: str(int(x)).zfill(8) if not pd.isnull(x) else np.nan)
+# pd.to_datetime(df['DTATESTADO'], format='%d%m%Y')
+# df['data_obito'] = pd.to_datetime(df['data_obito'], unit='ns')
 
-    # FILTER PARAMETERS
+# OCUPAÇÃO
+df['OCUP'] = df['OCUP'].apply(lambda x: str(
+    int(x)).zfill(6) if not pd.isnull(x) else np.nan)
+df['digito_ocup'] = df.OCUP.apply(
+    lambda x: x[0] if not pd.isnull(x) else np.nan)
+cbo2002['digito_ocup'] = cbo2002['digito_ocup'].str.strip('\xa0')
+df = pd.merge(df, cbo2002, how='left', on='digito_ocup')
+df = df.drop(columns=['OCUP', 'digito_ocup'])
 
-    df = df[[
-        'data_obito',
-        'ano_obito',
-        'dia_semana_obito',
-        # 'NATURAL',
-        'data_nasc',
-        'idade_obito_calculado',
-        'ano_nasc',
-        'dia_semana_nasc',
-        'idade_obito_anos',
-        'def_sexo',
-        'def_raca_cor',
-        'def_est_civil',
-        'def_escol',
-        'OCUP',
-        # 'CODMUNRES',
-        # 'CODMUNOCOR',
-        'def_loc_ocor',
-        'def_assist_med',
-        'def_exame',
-        'def_cirurgia',
-        'def_necropsia',
-        'res_CAPITAL',
-        'res_MSAUDCOD',
-        'res_RSAUDCOD',
-        'res_CSAUDCOD',
-        'res_LATITUDE',
-        'res_LONGITUDE',
-        'res_ALTITUDE',
-        'res_AREA',
-        # 'ocor_CAPITAL',
-        # 'ocor_MSAUDCOD',
-        # 'ocor_RSAUDCOD',
-        # 'ocor_CSAUDCOD',
-        # 'ocor_LATITUDE',
-        # 'ocor_LONGITUDE',
-        # 'ocor_ALTITUDE',
-        'ocor_AREA',
-        # 'ocor_SIGLA_UF',
-        # 'ocor_REGIAO',
-        'idade_obito',
-        'causabas_capitulo',
-        # 'causabas_grupo'
-    ]]
+df2 = df[cat_col].copy()
+one_hot_encoded_data = pd.get_dummies(df2, columns=cat_col)
+translation_table = str.maketrans({' ': '_', ',': '_'})
+one_hot_encoded_data.columns = [c.translate(
+    translation_table) for c in one_hot_encoded_data.columns]
+one_hot_encoded_data.columns = [
+    c.replace('__', '_') for c in one_hot_encoded_data.columns]
+one_hot_encoded_data.columns = one_hot_encoded_data.columns.str.lower()
+# np.savetxt('colunas_one_hot.txt', one_hot_encoded_data.columns, fmt='%s')
+# one_hot_encoded_data.columns = [c.replace(' ', '_') for c in one_hot_encoded_data.columns]
 
-    df.to_pickle(f'../data/{estado}_selected_features.pkl')
-    df = pd.read_pickle(f'../data/{estado}_selected_features.pkl')
-    cbo2002 = pd.read_excel('../03. Planilhas/CBO2002.xlsx')
+df = df.drop(columns=cat_col)
+df = pd.merge(df, one_hot_encoded_data, left_index=True, right_index=True)
+df = df.dropna(axis=0)
 
-    # IDENTIFICANDO COLUNAS DE CATEGORIAS
+df.causabas_capitulo.value_counts().to_excel('../03. Planilhas/causas.xlsx')
+df.causabas_capitulo.value_counts(normalize=True).mul(
+    100).round(1).astype(str) + '%'
 
-    cat_col = [
-        'dia_semana_obito',
-        # 'NATURAL',
-        'dia_semana_nasc',
-        'def_sexo',
-        'def_raca_cor',
-        'def_est_civil',
-        'def_escol',
-        'def_loc_ocor',
-        'def_assist_med',
-        'def_exame',
-        'def_cirurgia',
-        'def_necropsia',
-        'res_CAPITAL',
-        'res_MSAUDCOD',
-        'res_RSAUDCOD',
-        'res_CSAUDCOD',
-        # 'ocor_CAPITAL',
-        # 'ocor_MSAUDCOD',
-        # 'ocor_RSAUDCOD',
-        # 'ocor_CSAUDCOD',
-        # 'ocor_SIGLA_UF',
-        # 'ocor_REGIAO',
-        'grande_grupo_ocup',
-        'nivel_comp_ocup'
-    ]
+df.to_pickle(f'../data/{estado}_treated_base.pkl')
+df = pd.read_pickle(f'../data/{estado}_treated_base.pkl')
 
-    outras_colunas = df.columns
-    outras_colunas = list(set(outras_colunas).difference(set(cat_col)))
+print(df.shape)
 
-    # Datas (UNIX)
-    df = df.dropna(axis=0)
-    df['data_nasc'] = pd.to_datetime(df['data_nasc'])
-    df['data_obito'] = pd.to_datetime(df['data_obito'])
-    df['data_nasc'] = df['data_nasc'].astype('int64')
-    df['data_obito'] = df['data_obito'].astype('int64')
-    # df['DTATESTADO'] = df['DTATESTADO'].apply(lambda x: str(int(x)).zfill(8) if not pd.isnull(x) else np.nan)
-    # pd.to_datetime(df['DTATESTADO'], format='%d%m%Y')
-    # df['data_obito'] = pd.to_datetime(df['data_obito'], unit='ns')
+dict_doencas = {
+    'V.   Transtornos mentais e comportamentais': 'Outros',
+    'III. Doenças sangue órgãos hemat e transt imunitár': 'Outros',
+    'XIII.Doenças sist osteomuscular e tec conjuntivo': 'Outros',
+    'XII. Doenças da pele e do tecido subcutâneo': 'Outros',
+    'XVI. Algumas afec originadas no período perinatal': 'Outros',
+    'XVII.Malf cong deformid e anomalias cromossômicas': 'Outros',
+    'XV.  Gravidez parto e puerpério': 'Outros',
+    'VIII.Doenças do ouvido e da apófise mastóide': 'Outros',
+    'VII. Doenças do olho e anexos': 'Outros',
+}
 
-    # OCUPAÇÃO
-    df['OCUP'] = df['OCUP'].apply(lambda x: str(
-        int(x)).zfill(6) if not pd.isnull(x) else np.nan)
-    df['digito_ocup'] = df.OCUP.apply(
-        lambda x: x[0] if not pd.isnull(x) else np.nan)
-    cbo2002['digito_ocup'] = cbo2002['digito_ocup'].str.strip('\xa0')
-    df = pd.merge(df, cbo2002, how='left', on='digito_ocup')
-    df = df.drop(columns=['OCUP', 'digito_ocup'])
+df.causabas_capitulo.replace(dict_doencas, inplace=True)
 
-    df2 = df[cat_col].copy()
-    one_hot_encoded_data = pd.get_dummies(df2, columns=cat_col)
-    translation_table = str.maketrans({' ': '_', ',': '_'})
-    one_hot_encoded_data.columns = [c.translate(
-        translation_table) for c in one_hot_encoded_data.columns]
-    one_hot_encoded_data.columns = [
-        c.replace('__', '_') for c in one_hot_encoded_data.columns]
-    one_hot_encoded_data.columns = one_hot_encoded_data.columns.str.lower()
-    # np.savetxt('colunas_one_hot.txt', one_hot_encoded_data.columns, fmt='%s')
-    # one_hot_encoded_data.columns = [c.replace(' ', '_') for c in one_hot_encoded_data.columns]
+df.to_pickle(f'../data/{estado}_treated_base_top_causes.pkl')
+# df = pd.read_pickle(f'../data/{estado}_treated_base_top_causes.pkl')
 
-    df = df.drop(columns=cat_col)
-    df = pd.merge(df, one_hot_encoded_data, left_index=True, right_index=True)
-    df = df.dropna(axis=0)
-
-    # translator = str.maketrans('', '', string.punctuation)
-    # df.causabas_capitulo.apply(lambda x: x.translate(translator))
-    df.causabas_capitulo.value_counts().to_excel('causas.xlsx')
-    df.causabas_capitulo.value_counts(normalize=True).mul(
-        100).round(1).astype(str) + '%'
-
-    df.to_pickle(f'../data/{estado}_treated_base.pkl')
-    df = pd.read_pickle(f'../data/{estado}_treated_base.pkl')
-
-    dict_doencas = {
-        'V.   Transtornos mentais e comportamentais': 'Outros',
-        'III. Doenças sangue órgãos hemat e transt imunitár': 'Outros',
-        'XIII.Doenças sist osteomuscular e tec conjuntivo': 'Outros',
-        'XII. Doenças da pele e do tecido subcutâneo': 'Outros',
-        'XVI. Algumas afec originadas no período perinatal': 'Outros',
-        'XVII.Malf cong deformid e anomalias cromossômicas': 'Outros',
-        'XV.  Gravidez parto e puerpério': 'Outros',
-        'VIII.Doenças do ouvido e da apófise mastóide': 'Outros',
-        'VII. Doenças do olho e anexos': 'Outros',
-    }
-
-    df.causabas_capitulo.replace(dict_doencas, inplace=True)
-
-    df.to_pickle(f'../data/{estado}_treated_base_top_causes.pkl')
-    # df = pd.read_pickle(f'../data/{estado}_treated_base_top_causes.pkl')
-
-    # top10_params = df[[
-    #     'data_nasc',
-    #     'ano_nasc',
-    #     'def_cirurgia_sim',
-    #     'data_obito',
-    #     'idade_obito',
-    #     'idade_obito_calculado',
-    #     'idade_obito_anos',
-    #     'ano_obito',
-    #     'def_loc_ocor_domicílio',
-    #     'def_est_civil_solteiro',
-    #     'def_raca_cor_indígena',
-    #     'def_sexo_ignorado',
-    #     'res_rsaudcod_3517',
-    #     'res_rsaudcod_3511',
-    #     'dia_semana_nasc_sex',
-    #     'dia_semana_obito_qui',
-    #     'dia_semana_obito_qua',
-    #     'dia_semana_obito_sab'
-    # ]]
-
-    # df.to_pickle('../data/SP_treated_base_top10_features.pkl')
+# if estado == 'SP':
+#     df.columns.to_series().to_csv('../data/SP_final_features.csv', index=False)

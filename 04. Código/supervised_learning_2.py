@@ -18,7 +18,7 @@ from sklearn.metrics import top_k_accuracy_score
 #####################################################################################################
 
 data_arrays = np.load(
-    './data/data_top_causes_all_features.npz', allow_pickle=True)
+    '../data/data_top_causes_all_features.npz', allow_pickle=True)
 X_test = data_arrays['X_test']
 X_train = data_arrays['X_train']
 y_test = data_arrays['y_test']
@@ -259,6 +259,6 @@ plt.title('Top-k Accuracy vs. k')
 plt.gca().yaxis.set_major_formatter(PercentFormatter())
 plt.legend()
 plt.grid(True)
-plt.savefig('./02. Relatorio/top-k-accuracy-model-comparison.png',
+plt.savefig('../02. Relatorio/top-k-accuracy-model-comparison.png',
             format='png', dpi=300)
 plt.show()
