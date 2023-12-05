@@ -373,7 +373,7 @@ for i in range(len(features_array)):
 # Plotting
 plt.figure(figsize=(10, 6))
 plt.plot(percentages, [acc * 100 for acc in catboost_accuracies_fss],
-         'b--', label='Accuracy')  # Convertendo para porcentagem
+         'b--', label='(Top-1) Accuracy')  # Convertendo para porcentagem
 plt.plot(percentages, [top_k_acc * 100 for top_k_acc in catboost_top_k_accuracies_fss],
          'ro--', label='Top-3 Accuracy')  # Convertendo para porcentagem
 plt.axhline(y=100/11, color='gray', linestyle='--',
@@ -394,7 +394,7 @@ plt.show()
 # Plotting
 plt.figure(figsize=(10, 6))
 plt.plot(percentages, [acc * 100 for acc in catboost_accuracies_fss],
-         'b--', label='Accuracy')  # Convertendo para porcentagem
+         'b--', label='(Top-1) Accuracy')  # Convertendo para porcentagem
 plt.plot(percentages, [top_k_acc * 100 for top_k_acc in catboost_top_k_accuracies_fss],
          'ro--', label='Top-3 Accuracy')  # Convertendo para porcentagem
 plt.axhline(y=100/11, color='gray', linestyle='--',

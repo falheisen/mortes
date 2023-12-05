@@ -130,7 +130,7 @@ for k in range(1, 12):
 # Plotting
 plt.figure(figsize=(10, 6))
 plt.plot(range(1, 12), [acc * 100 for acc in xgb_accuracies],
-         'b--', label='Accuracy')  # Convertendo para porcentagem
+         'b--', label='(Top-1) Accuracy')  # Convertendo para porcentagem
 plt.plot(range(1, 12), [top_k_acc * 100 for top_k_acc in xgb_top_k_accuracies],
          'ro--', label='Top-k Accuracy')  # Convertendo para porcentagem
 plt.axhline(y=100/11, color='gray', linestyle='--',
