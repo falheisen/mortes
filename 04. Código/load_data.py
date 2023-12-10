@@ -8,11 +8,11 @@ dfs = {}
 
 estados = [
     # "SP",
-    # "RS",
+    "RS",
     'PE',
-    # 'DF',
-    # 'GO',
-    # 'PA'
+    'DF',
+    'GO',
+    'PA'
 ]
 
 # estado = 'AC'

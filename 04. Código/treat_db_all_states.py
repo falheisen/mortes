@@ -5,9 +5,9 @@ import numpy as np
 # estado = 'RS'
 
 estados = [
-    # "SP",
+    "SP",
     # "RS",
-    'PE',
+    # 'PE',
     # 'DF',
     # 'GO',
     # 'PA'
